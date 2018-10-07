@@ -1,0 +1,10 @@
+# package directories
+node_modules
+minify
+# Serverless directories
+.serverless
+.webpack
+.DS_Store
+# Mist
+log
+.env
