@@ -6,7 +6,6 @@ var express = require('express');
 var AWS = require('aws-sdk');
 var model = require('node-model');
 var unique = require('array-unique');
-AWS.config.loadFromPath('./aws_config.json');
 var MobileDetect = require('mobile-detect');
 var dynamodb = new AWS.DynamoDB();
 var dbClient = new AWS.DynamoDB.DocumentClient();
@@ -211,42 +210,6 @@ exports.getRadarItems = function (req, res) {
 exports.updateItems = function (req, res) {
     sendRequest('post', 'api/updateitems', req.cookies.usertoken, req, res);
 }
-exports.reset = function (req, res) {
-    var findparams = {
-        TableName: USERTBLNAME,
-        IndexName: USERTOKENINDEXNAME,
-        KeyConditionExpression: "usertoken = :tokenstr",
-        ExpressionAttributeValues: {
-            ":tokenstr": req.params.token
-        }
-    };
-    dbClient.query(findparams, function (err, data) {
-        if (err) {
-            sendResult(404, { 'status': false, 'data': err }, res);
-        } else {
-            if (data.Count > 0) {
-                var user = data.Items[0];
-                var md = new MobileDetect(req.headers['user-agent'])
-                if (user.usertoken == req.params.token) {
-                    if (md.mobile()) {
-                        res.render('mobilereset', { token: req.params.token, email: user.email });
-                    } else {
-                        res.render('reset', { token: req.params.token, email: user.email });
-                    }
-                } else {
-                    if (md.mobile()) {
-                        res.render('mobileforgot', { token: req.params.token, email: user.email });
-                    } else {
-                        res.render('forgot', { token: req.params.token, email: user.email });
-                    }
-                }
-            } else {
-                sendResult(200, { 'status': false, 'data': 'Not exist user' }, res);
-            }
-        }
-    });
-}
-
 function sendRequest(method, url, token, req, res) {
     axios({
         method: method,
